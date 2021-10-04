@@ -38,6 +38,7 @@
         android:textStyle="bold|italic" />
 
     <Button
+        android:id="@+id/Success"
         android:layout_width="match_parent"
         android:layout_height="79dp"
         android:layout_marginStart="30dp"
@@ -48,6 +49,7 @@
         android:text="Continue"
         android:textSize="20sp"
         android:textStyle="bold|italic"
-        app:backgroundTint="#009688" />
+        app:backgroundTint="#009688"
+        tools:ignore="InvalidId" />
 
 </LinearLayout>

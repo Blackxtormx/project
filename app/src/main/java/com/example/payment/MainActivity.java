@@ -1,43 +1,157 @@
 package com.example.payment;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-//import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.HashMap;
+
+public class MainActivity extends AppCompatActivity {
+    private Button MainActivity;
+    private EditText  entername, editTextPhone2, editTextTextPersonName4, editTextTextPersonName5;
+    private ProgressDialog loadingBar;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Spinner spinner = findViewById(R.id.spinner1);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.cusCity, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(this);
+
+
+        MainActivity =(Button) findViewById(R.id.proceedtopay);
+        entername =(EditText) findViewById(R.id.entername);
+        editTextPhone2 =(EditText) findViewById(R.id.editTextPhone2);
+        editTextTextPersonName4 =(EditText) findViewById(R.id.editTextTextPersonName4);
+        editTextTextPersonName5 =(EditText) findViewById(R.id.editTextTextPersonName5);
+        loadingBar = new ProgressDialog(this);
+
+
+        MainActivity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity();
+            }
+        });
+
+
+
+
     }
 
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        String text = parent.getItemAtPosition(position).toString();
-        Toast.makeText(parent.getContext(), text, Toast.LENGTH_SHORT).show();
+    private void MainActivity()
+    {
+        String name = entername.getText().toString();
+        String phone = editTextPhone2.getText().toString();
+        String district= editTextTextPersonName4.getText().toString();
+        String address = editTextTextPersonName5.getText().toString();
+
+
+        if (TextUtils.isEmpty(name)){
+            Toast.makeText(this, "Please write your name...", Toast.LENGTH_SHORT).show();
+        }
+        else if (TextUtils.isEmpty(phone)){
+            Toast.makeText(this, "Please write your phone number...", Toast.LENGTH_SHORT).show();
+        }
+        else if (!(phone.length()==10)) {
+            Toast.makeText(this, "Please enter valid phone number...", Toast.LENGTH_SHORT).show();
+        }
+
+        else if (TextUtils.isEmpty(district)){
+            Toast.makeText(this, "Please write your district...", Toast.LENGTH_SHORT).show();
+        }
+        else if (TextUtils.isEmpty(address)){
+            Toast.makeText(this, "Please write your address...", Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            loadingBar.setTitle(" Submitting details ");
+            loadingBar.setMessage("Please wait, while we are checking the credentials.");
+            loadingBar.setCanceledOnTouchOutside(false);
+            loadingBar.show();
+
+            ValidatephoneNumber(name, phone, district, address );
+        }
+
     }
 
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
+    private void ValidatephoneNumber(final String name, final String phone, final String district, final String address) {
+
+
+        final DatabaseReference RootRef;
+        RootRef = FirebaseDatabase.getInstance().getReference();
+
+        RootRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot datasnapshot)
+            {
+
+                if (!(datasnapshot.child("ShippingDetails").child(phone).exists()))
+                {
+                    HashMap<String, Object> userdataMap = new HashMap<>();
+                    userdataMap.put("phone", phone);
+                    userdataMap.put("name", name);
+                    userdataMap.put("district", district);
+                    userdataMap.put("address", address);
+
+                    RootRef.child("ShippingDetails").child(phone).updateChildren(userdataMap)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task)
+                                {
+                                    if (task.isSuccessful())
+                                    {
+                                        Toast.makeText(MainActivity.this, "Congratulations, your account has been created.", Toast.LENGTH_SHORT).show();
+                                        loadingBar.dismiss();
+
+                                        Intent intent = new Intent(MainActivity.this, Payment2.class);
+                                        startActivity(intent);
+                                    }
+                                    else
+                                    {
+                                        loadingBar.dismiss();
+                                        Toast.makeText(MainActivity.this, "Network Error: Please try again after some time...", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                }
+                else
+                {
+
+                    Toast.makeText(MainActivity.this, "This " + phone + " already exists.", Toast.LENGTH_SHORT).show();
+                    loadingBar.dismiss();
+
+                    Toast.makeText(MainActivity.this, "Please try again using another phone number.", Toast.LENGTH_SHORT).show();
+
+                    Intent intent =new Intent(MainActivity.this, Payment2.class);
+                    startActivity(intent);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
 
     }
+
+
 }

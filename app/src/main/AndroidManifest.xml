@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.payment">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -10,10 +12,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Payment">
         <activity
-            android:name=".SavedCards"
+            android:name=".flashsc"
             android:exported="true" />
         <activity
-            android:name=".cardCRUD"
+            android:name=".ui.login.flashS"
+            android:exported="true"
+            android:label="@string/title_activity_flash_s" />
+        <activity
+            android:name=".discount"
+            android:exported="true" />
+        <activity
+            android:name=".SavedCards"
             android:exported="true" />
         <activity
             android:name=".Cashondelivery"
@@ -26,6 +35,15 @@
             android:exported="true" />
         <activity
             android:name=".Payment2"
+            android:exported="true" />
+        <activity
+            android:name=".RetreiveDataActivity"
+            android:exported="true" />
+        <activity
+            android:name=".paymentAc"
+            android:exported="true" />
+        <activity
+            android:name=".AddActivity"
             android:exported="true" />
         <activity
             android:name=".MainActivity"
